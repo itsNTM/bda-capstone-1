@@ -18,9 +18,41 @@ def download_video(url):
 
     # Save inside videos/ using the video title as the filename
     ydl_options = {
-        "outtmpl": "videos/%(title)s.%(ext)s"
+        "outtmpl": "videos/%(title)s.%(ext)s",
+        "socket_timeout": 30,
     }
 
-    # Download video
+    try:
+        # Download video
+        with yt_dlp.YoutubeDL(ydl_options) as ydl:
+            ydl.download([url])
+        return {
+            "url": url,
+            "status": "success",
+            "error": "",
+        }
+    except Exception as error:
+        return {
+            "url": url,
+            "status": "failed",
+            "error": str(error),
+        }
+
+
+def get_video_metadata(url):
+    ydl_options = {
+        "quiet": True,
+        "skip_download": True,
+    }
+
     with yt_dlp.YoutubeDL(ydl_options) as ydl:
-        ydl.download([url])
+        info = ydl.extract_info(url, download=False)
+        return {
+            "title": info.get("title"),
+            "duration": info.get("duration"),
+            "uploader": info.get("uploader"),
+            "view_count": info.get("view_count"),
+            "ext": info.get("ext"),
+            "url": url,
+        }
+      
